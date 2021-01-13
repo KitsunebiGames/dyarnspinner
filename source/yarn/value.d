@@ -192,6 +192,43 @@ public:
     }
 
     /**
+        Allows comparing values
+    */
+    int opCmp(Value value) const {
+        switch (type) {
+            case YarnType.Number:
+                
+                // Compare numeric types
+                if (num_ < value.num_) return -1;
+                else if (num_ > value.num_) return 1;
+                return 0;
+            
+            case YarnType.String:
+                immutable(size_t) thisHash = toHash();
+                immutable(size_t) valueHash = value.toHash();
+                
+                // Compare strings
+                // NOTE for now this is now done in the same way as C#!
+                // This sorts by how they would be ordered in a 
+                // associative array/dictionary
+                if (thisHash < valueHash) return -1;
+                else if (thisHash > valueHash) return 1;
+                return 0;
+
+            case YarnType.Bool:
+                
+                // Compare boolean types 
+                // (this doesn't make much sense but we gotta do it anyways
+                // just in case)
+                if (bool_ < value.bool_) return -1;
+                else if (bool_ > value.bool_) return 1;
+                return 0;
+            
+            default: throw new Exception("Unknown value type %s".format(type.text));
+        }
+    }
+
+    /**
         Gets this value instance's hash
     */
     @trusted
