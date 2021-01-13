@@ -208,7 +208,7 @@ public:
                 immutable(size_t) valueHash = value.toHash();
                 
                 // Compare strings
-                // NOTE for now this is now done in the same way as C#!
+                // NOTE for now this is not done in the same way as C#!
                 // This sorts by how they would be ordered in a 
                 // associative array/dictionary
                 if (thisHash < valueHash) return -1;
