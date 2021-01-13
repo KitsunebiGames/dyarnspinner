@@ -7,13 +7,31 @@ module yarn.bytecode;
 
 import google.protobuf;
 
-enum protocVersion = 3014000;
+/**
+    ProtoC version used to originally generate this file
+*/
+enum protocVersion = 3_014_000;
+
 
 /**
     A program
 */
 struct Program
 {
+    /**
+        Load program
+    */
+    static Program load(ubyte[] buff) {
+        return fromProtobuf!Program(buff);
+    }
+
+    /**
+        Save program
+    */
+    ubyte[] save() {
+        return toProtobuf(this);
+    }
+
     /**
         Name of the program
     */
