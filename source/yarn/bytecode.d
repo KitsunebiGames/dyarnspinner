@@ -156,14 +156,14 @@ struct Operand
         static if (isSomeString!T) {
             enforce(_type == OperandType.String, "Can not get string from %s operand".format(_type.text));
 
-            static if (is(T == string)) {
+            static if (is(T : string)) {
                 return _stringValue;
-            } else static if (is(T == wstring)) {
+            } else static if (is(T : wstring)) {
                 return _stringValue.toUTF16;
             } else {
                 return _stringValue.toUTF32;
             }
-            
+
         } else static if(is(T == bool)) {
 
             enforce(_type == OperandType.Boolean, "Can not get bool from %s operand".format(_type.text));
