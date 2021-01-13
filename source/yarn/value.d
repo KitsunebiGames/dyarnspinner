@@ -112,11 +112,50 @@ public:
             default: assert(0);
         }
     }
+
+    /**
+        Gets the value of a type, a runtime error is generated if attempting to convert between types
+    */
+    T get(T)() {
+        static if (is(T == Value)) {
+            return this;
+        } else {
+
+            static if (isSomeString!T) {
+
+                // NOTE: We'll support all UTF modes
+                enforce(type == YarnType.String, "Could not convert type %s to %s".format(type.text, T.stringof));
+                static if (is(T : string)) {
+                    return str_;
+                } else static if (is(T : wstring)) {
+                    return str_.toUTF16;
+                } else {
+                    return str_.toUTF32;
+                }
+
+            } else static if (is(T == bool)) {
+
+                enforce(type == YarnType.Bool, "Could not convert type %s to bool".format(type.text));
+                return this.bool_;
+
+            } else static if (isNumeric!T) {
+
+                // NOTE: We cast to T since we don't know what
+                // numeric type we're getting
+                // D does not auto cast numeric types!
+                enforce(type == YarnType.Number, "Could not convert type %s to %s".format(type.text, T.stringof));
+                return cast(T)this.num_;
+
+            } else {
+                static assert(0, "Unknown value type %s".format(T.stringof));
+            }
+        }
+    }
     
     /**
         Gets (and converts if possible and needed) the internal value of the Value
     */
-    T get(T)() {
+    T coerce(T)() {
         static if (is(T == Value)) {
             return this;
         } static if (isSomeString!T) {
@@ -252,6 +291,6 @@ public:
         Gets this value instance as a string
     */
     string toString() {
-        return "[type=%s, value=%s]".format(type, get!string);
+        return "[type=%s, value=%s]".format(type, coerce!string);
     }
 }
