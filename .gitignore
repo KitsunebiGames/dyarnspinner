@@ -1,0 +1,17 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/yarnspinner
+yarnspinner.so
+yarnspinner.dylib
+yarnspinner.dll
+yarnspinner.a
+yarnspinner.lib
+yarnspinner-test-*
+*.exe
+*.o
+*.obj
+*.lst
+dub.selections.json
+out/

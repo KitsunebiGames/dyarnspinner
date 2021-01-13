@@ -1,0 +1,10 @@
+name "dyarnspinner"
+description "D YarnSpinner implementation"
+authors "Luna"
+copyright "Copyright © 2021, Luna"
+license "MIT"
+dependency "protobuf" version="~>0.6.2"
+dependency "silly" version="~>1.0.2"
+
+// Throw stuff in to out/ dir
+targetPath "out/"
