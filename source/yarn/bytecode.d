@@ -145,6 +145,46 @@ struct Operand
     OperandType _type = OperandType.undefined;
 
     /**
+        Union of operand values
+    */
+    @Oneof("_type")
+    union {
+
+        /// string value
+        @Proto(1) string _stringValue = protoDefaultValue!string;
+
+        /// bool value
+        @Proto(2) bool _boolValue;
+
+        /// float value
+        @Proto(3) float _floatValue;
+    }
+
+    /**
+        Creates a string operand
+    */
+    this(string value) {
+        _type = OperandType.String;
+        _stringValue = value;
+    }
+
+    /**
+        Creates a boolean operand
+    */
+    this(bool value) {
+        _type = OperandType.Boolean;
+        _boolValue = value;
+    }
+
+    /**
+        Creates a numeric operand
+    */
+    this(T)(T value) if (isNumeric!T) {
+        _type = OperandType.Number;
+        _floatValue = cast(float)value;
+    }
+
+    /**
         Gets the type of the operand
     */
     @property OperandType type() { return _type; }
@@ -176,18 +216,5 @@ struct Operand
 
             static assert(0, "Invalid operand type conversion");
         }
-    }
-
-    @Oneof("_type")
-    union {
-
-        /// string value
-        @Proto(1) string _stringValue = protoDefaultValue!string;
-
-        /// bool value
-        @Proto(2) bool _boolValue;
-
-        /// float value
-        @Proto(3) float _floatValue;
     }
 }
