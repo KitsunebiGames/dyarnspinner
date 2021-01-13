@@ -4,8 +4,11 @@
     !! This will manually be maintained !!
 */
 module yarn.bytecode;
-
+import std.traits;
 import google.protobuf;
+import std.utf;
+import std.format;
+import std.conv;
 
 /**
     ProtoC version used to originally generate this file
@@ -124,23 +127,67 @@ struct Instruction
 */
 struct Operand
 {
+    
     /**
-        Value case
+        Type of the operand
     */
-    enum ValueCase
+    enum OperandType
     {
-        valueNotSet = 0,
-        stringValue = 1,
-        boolValue = 2,
-        floatValue = 3,
+        Undefined = 0,
+        String = 1,
+        Boolean = 2,
+        Number = 3,
     }
-    ValueCase _valueCase = ValueCase.valueNotSet;
-    @property ValueCase valueCase() { return _valueCase; }
-    void clearValue() { _valueCase = ValueCase.valueNotSet; }
-    @Oneof("_valueCase") union
-    {
-        @Proto(1) string _stringValue = protoDefaultValue!string; mixin(oneofAccessors!_stringValue);
-        @Proto(2) bool _boolValue; mixin(oneofAccessors!_boolValue);
-        @Proto(3) float _floatValue; mixin(oneofAccessors!_floatValue);
+
+    /**
+        Type of the operand
+    */
+    OperandType _type = OperandType.undefined;
+
+    /**
+        Gets the type of the operand
+    */
+    @property OperandType type() { return _type; }
+    
+    /**
+        Gets the value of this operand
+    */
+    T get(T)() {
+        static if (isSomeString!T) {
+            enforce(_type == OperandType.String, "Can not get string from %s operand".format(_type.text));
+
+            static if (is(T == string)) {
+                return _stringValue;
+            } else static if (is(T == wstring)) {
+                return _stringValue.toUTF16;
+            } else {
+                return _stringValue.toUTF32;
+            }
+            
+        } else static if(is(T == bool)) {
+
+            enforce(_type == OperandType.Boolean, "Can not get bool from %s operand".format(_type.text));
+            return _boolValue;
+        } else static if(isNumeric!T) {
+
+            enforce(_type == OperandType.Number, "Can not get bool from %s operand".format(_type.text));
+            return cast(T)_floatValue;
+        } else {
+
+            static assert(0, "Invalid operand type conversion");
+        }
+    }
+
+    @Oneof("_type")
+    union {
+
+        /// string value
+        @Proto(1) string _stringValue = protoDefaultValue!string;
+
+        /// bool value
+        @Proto(2) bool _boolValue;
+
+        /// float value
+        @Proto(3) float _floatValue;
     }
 }
