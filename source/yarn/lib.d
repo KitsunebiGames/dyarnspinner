@@ -120,3 +120,86 @@ unittest {
 
     assert(terribleLib.call("Test").get!float == 42, "Did not get expected result");
 }
+
+/**
+    Implementation of the YarnSpinner standard library
+*/
+class StandardLibrary : Library {
+    this() {
+        this.register("Add", delegate(YarnValue rhs, YarnValue lhs) {
+            return rhs + lhs;
+        });
+
+        this.register("Minus", delegate(YarnValue rhs, YarnValue lhs){
+            return rhs - lhs;
+        });
+
+        this.register("UnaryMinus", delegate(YarnValue rhs){
+            return -rhs;
+        });
+
+        this.register("Divide", delegate(YarnValue rhs, YarnValue lhs){
+            return rhs / lhs;
+        });
+
+        this.register("Multiply", delegate(YarnValue rhs, YarnValue lhs){
+            return rhs * lhs;
+        });
+
+        this.register("Modulo", delegate(YarnValue rhs, YarnValue lhs){
+            return rhs % lhs;
+        });
+
+        this.register("EqualTo", delegate(YarnValue rhs, YarnValue lhs){
+            return rhs == lhs;
+        });
+
+        this.register("NotEqualTo", delegate(YarnValue rhs, YarnValue lhs){
+            return rhs != lhs;
+        });
+
+        this.register("GreaterThan", delegate(YarnValue rhs, YarnValue lhs){
+            return rhs > lhs;
+        });
+
+        this.register("GreaterThanOrEqualTo", delegate(YarnValue rhs, YarnValue lhs){
+            return rhs >= lhs;
+        });
+
+        this.register("LessThan", delegate(YarnValue rhs, YarnValue lhs){
+            return rhs < lhs;
+        });
+
+        this.register("LessThanOrEqualTo", delegate(YarnValue rhs, YarnValue lhs){
+            return rhs <= lhs;
+        });
+
+        this.register("And", delegate(YarnValue rhs, YarnValue lhs){
+            return Value(rhs.get!bool && lhs.get!bool);
+        });
+
+        this.register("Or", delegate(YarnValue rhs, YarnValue lhs){
+            return Value(rhs.get!bool || lhs.get!bool);
+        });
+
+        this.register("Xor", delegate(YarnValue rhs, YarnValue lhs){
+            return Value(rhs.get!bool ^ lhs.get!bool);
+        });
+
+        this.register("Not", delegate(YarnValue rhs){
+            return Value(!rhs.get!bool);
+        });
+
+        this.register("string", delegate(YarnValue rhs){
+            return Value(rhs.get!string);
+        });
+
+        this.register("number", delegate(YarnValue rhs){
+            return Value(rhs.get!float);
+        });
+
+        this.register("bool", delegate(YarnValue rhs){
+            return Value(rhs.get!bool);
+        });
+    }
+}
