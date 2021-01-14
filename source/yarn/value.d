@@ -34,7 +34,7 @@ enum YarnType : ubyte {
 /**
     A YarnSpinner value
 */
-struct Value {
+struct YarnValue {
 private:
     YarnType type;
 
@@ -60,7 +60,7 @@ public:
     /**
         Makes a value copy
     */
-    this(Value value) {
+    this(YarnValue value) {
         if (value.type == YarnType.String) {
             this.str_ = value.str_.dup;
         } else {
@@ -102,8 +102,8 @@ public:
     /**
         Returns a new undefined value
     */
-    static Value undefined() {
-        Value v;
+    static YarnValue undefined() {
+        YarnValue v;
         v.type = YarnType.Undefined;
         return v;
     }
@@ -111,7 +111,7 @@ public:
     /**
         Compare values
     */
-    int cmp(Value value) {
+    int cmp(YarnValue value) {
 
         // We can't compare different types meaningfully
         enforce(type == value.type, "Cannot compare values of differing types %s and %s".format(type.text, value.type.text));
@@ -126,7 +126,7 @@ public:
         Gets the value of a type, a runtime error is generated if attempting to convert between types
     */
     T get(T)() {
-        static if (is(T == Value)) {
+        static if (is(T == YarnValue)) {
             return this;
         } else {
 
@@ -162,10 +162,10 @@ public:
     }
     
     /**
-        Gets (and converts if possible and needed) the internal value of the Value
+        Gets (and converts if possible and needed) the internal value of the YarnValue
     */
     T coerce(T)() {
-        static if (is(T == Value)) {
+        static if (is(T == YarnValue)) {
             return this;
         } static if (isSomeString!T) {
 
@@ -221,7 +221,7 @@ public:
     /**
         Allows comparing values for equality
     */
-    bool opEquals(R)(const R other) const if (is(R == Value))
+    bool opEquals(R)(const R other) const if (is(R == YarnValue))
     {
         enforce(type == other.type, "Could not convert type %s to %s".format(type.text, other.type.text));
 
@@ -242,7 +242,7 @@ public:
     /**
         Allows comparing values
     */
-    int opCmp(Value value) const {
+    int opCmp(YarnValue value) const {
         switch (type) {
             case YarnType.Number:
                 

@@ -10,7 +10,7 @@ import std.conv;
 
 package(yarn.vm) struct YarnState {
 private:
-    Stack!Value stack;
+    Stack!YarnValue stack;
 
 public:
     /**
@@ -30,7 +30,7 @@ public:
         this.currentNode = saveState.activeNode;
         this.programCounter = saveState.progc;
         foreach(stackValue; saveState.stack) {
-            this.stack.push(stackValue.get!Value);
+            this.stack.push(stackValue.get!YarnValue);
         }
     }
 
@@ -52,21 +52,21 @@ public:
         static if (is(T == Value)) {
             stack.push(value);
         } else {
-            stack.push(Value!T(value));
+            stack.push(YarnValue!T(value));
         }
     }
 
     /**
         Pop value off the stack
     */
-    Value popValue() {
+    YarnValue popValue() {
         return stack.pop();
     }
 
     /**
         Peek at the top value of the stack
     */
-    Value peekValue() {
+    YarnValue peekValue() {
         return stack.peek();
     }
 
@@ -75,6 +75,12 @@ public:
     */
     void clearStack() {
         stack.clear();
+    }
+
+    void reset() {
+        this.programCounter = 0;
+        this.clearStack();
+        this.currentNode = "";
     }
 }
 
@@ -118,7 +124,7 @@ struct VMSaveState {
 }
 
 /**
-    Value on the VM stack
+    YarnValue on the VM stack
 */
 struct VMStackValue {
 
@@ -158,7 +164,7 @@ struct VMStackValue {
         @Proto(3) bool _boolValue;
     }
 
-    this(Value value) {
+    this(YarnValue value) {
         switch(value.typeOf()) {
 
             case YarnType.Number:
@@ -237,14 +243,14 @@ struct VMStackValue {
             enforce(_type == ValueType.Number, "Can not get bool from %s operand".format(_type.text));
             return cast(T)_numberValue;
 
-        } else static if(is(T == Value)) {
+        } else static if(is(T == YarnValue)) {
             
             // Gets the appropriate Yarn type from this type
             switch(_type) {
-                case ValueType.Number: return Value(get!float);
-                case ValueType.String: return Value(get!string);
-                case ValueType.Boolean: return Value(get!bool);
-                default: return Value.undefined();
+                case ValueType.Number: return YarnValue(get!float);
+                case ValueType.String: return YarnValue(get!string);
+                case ValueType.Boolean: return YarnValue(get!bool);
+                default: return YarnValue.undefined();
             }
 
         } else static assert(0, "Invalid operand type conversion");
