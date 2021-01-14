@@ -225,7 +225,10 @@ public:
         Implements binary operations between values
     */
     YarnValue opBinary(string op)(Value other) {
-        enforce(type == YarnType.Number, "Can not do binary operations on non-numeric types");
+        enforce(
+            type == YarnType.Number && other.type == YarnType.Number, 
+            "Can not do binary operations on non-numeric types"
+        );
         return YarnValue(mixin(this.num_, op, other.num_));
     }
 
