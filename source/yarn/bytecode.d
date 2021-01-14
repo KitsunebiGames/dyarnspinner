@@ -14,7 +14,7 @@ import std.array;
 /**
     A program
 */
-struct Program {
+class Program {
     /**
         Load program
 
@@ -52,7 +52,7 @@ struct Program {
 /**
     A node
 */
-struct Node {
+class Node {
     /**
         Name of the node
     */
@@ -105,7 +105,7 @@ enum OpCode : ubyte {
 /**
     An instruction
 */
-struct Instruction {
+class Instruction {
     /**
         The OPCode for the instruction
     */
@@ -120,7 +120,7 @@ struct Instruction {
 /**
     An operand
 */
-struct Operand {
+class Operand {
     
     /**
         Type of the operand
@@ -157,6 +157,11 @@ struct Operand {
         /// float value
         @Proto(3) float _floatValue;
     }
+
+    /**
+        Base constructor
+    */
+    this() { }
 
     /**
         Creates a string operand
