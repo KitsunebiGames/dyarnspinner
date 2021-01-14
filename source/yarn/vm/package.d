@@ -1,6 +1,8 @@
 module yarn.vm;
 import yarn.value;
-import yarn.stack;
+import yarn.bytecode;
+import yarn.vm.state;
+import yarn.dialogue;
 
 package(yarn) enum TokenType {
     Whitespace,
@@ -70,56 +72,8 @@ package(yarn) enum TokenType {
     Text
 }
 
-package(yarn) struct YarnState {
-private:
-    Stack!Value stack;
-
-public:
-    /**
-        Name of the current node
-    */
-    string currentNode;
-
-    /**
-        Program/instruction counter
-    */
-    int programCounter;
-
-    /**
-        Push a value to the stack
-    */
-    void pushValue(T)(T value) {
-        static if (is(T == Value)) {
-            stack.push(value);
-        } else {
-            stack.push(Value!T(value));
-        }
-    }
-
-    /**
-        Pop value off the stack
-    */
-    Value popValue() {
-        return stack.pop();
-    }
-
-    /**
-        Peek at the top value of the stack
-    */
-    Value peekValue() {
-        return stack.peek();
-    }
-
-    /**
-        Clears the stack
-    */
-    void clearStack() {
-        stack.clear();
-    }
-}
-
 /**
-    The execution state of a VM
+    The execution state of a YarnSpinner VM
 */
 enum ExecutionState {
     /**
@@ -148,10 +102,27 @@ enum ExecutionState {
     Running
 }
 
+/**
+    A YarnSpinner VM
+*/
 class YarnVM {
 private:
     YarnState state;
+    YarnDialogue dialogue;
 
 public:
+    
+    /**
+        Dialogue to execute
+    */
+    this(YarnDialogue dialogue) {
+        this.dialogue = dialogue;
+    }
 
+    /**
+        Runs the next instruction
+    */
+    void runNext() {
+        
+    }
 }
