@@ -45,3 +45,30 @@ public:
     */
     string[] substitutions;
 }
+
+struct YarnOption {
+public:
+    /**
+        Line for the option
+    */
+    YarnLine line;
+
+    /**
+        ID of the option
+    */
+    int id;
+
+    /**
+        The node this option links to
+    */
+    string destinationNode;
+}
+
+/**
+    Yarn Spinner Dialogue
+*/
+struct YarnDialogue {
+private:
+
+public:
+}
