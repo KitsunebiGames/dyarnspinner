@@ -222,6 +222,22 @@ public:
     }
 
     /**
+        Implements binary operations between values
+    */
+    YarnValue opBinary(string op)(Value other) {
+        enforce(type == YarnType.Number, "Can not do binary operations on non-numeric types");
+        return YarnValue(mixin(this.num_, op, other.num_));
+    }
+
+    /**
+        Implements negate unary operation
+    */
+    YarnValue opUnary(string op = "-")() {
+        enforce(type == YarnType.Number, "Can not do unary operations on non-numeric types");
+        return YarnValue(-this.num_);
+    }
+
+    /**
         Allows comparing values for equality
     */
     bool opEquals(R)(const R other) const if (is(R == YarnValue))
