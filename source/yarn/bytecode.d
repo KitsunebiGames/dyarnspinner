@@ -9,20 +9,16 @@ import google.protobuf;
 import std.utf;
 import std.format;
 import std.conv;
-
-/**
-    ProtoC version used to originally generate this file
-*/
-enum protocVersion = 3_014_000;
-
+import std.array;
 
 /**
     A program
 */
-struct Program
-{
+struct Program {
     /**
         Load program
+
+        NOTE: Read from disk with `std.file.read`
     */
     static Program load(ubyte[] buff) {
         return fromProtobuf!Program(buff);
@@ -30,9 +26,11 @@ struct Program
 
     /**
         Save program
+
+        NOTE: Write to disk with `std.file.write`
     */
     ubyte[] save() {
-        return toProtobuf(this);
+        return toProtobuf(this).array;
     }
 
     /**
@@ -54,8 +52,7 @@ struct Program
 /**
     A node
 */
-struct Node
-{
+struct Node {
     /**
         Name of the node
     */
@@ -85,8 +82,7 @@ struct Node
 /**
     OPCodes
 */
-enum OpCode : ubyte
-{
+enum OpCode : ubyte {
     JUMP_TO = 0,
     JUMP = 1,
     RUN_LINE = 2,
@@ -109,8 +105,7 @@ enum OpCode : ubyte
 /**
     An instruction
 */
-struct Instruction
-{
+struct Instruction {
     /**
         The OPCode for the instruction
     */
@@ -125,8 +120,7 @@ struct Instruction
 /**
     An operand
 */
-struct Operand
-{
+struct Operand {
     
     /**
         Type of the operand
@@ -137,12 +131,16 @@ struct Operand
         String = 1,
         Boolean = 2,
         Number = 3,
+
+        stringValue = String,
+        floatValue = Number,
+        boolValue = Boolean,
     }
 
     /**
         Type of the operand
     */
-    OperandType _type = OperandType.undefined;
+    OperandType _type = OperandType.Undefined;
 
     /**
         Union of operand values
@@ -194,8 +192,8 @@ struct Operand
     */
     T get(T)() {
         static if (isSomeString!T) {
-            enforce(_type == OperandType.String, "Can not get string from %s operand".format(_type.text));
 
+            enforce(_type == OperandType.String, "Can not get string from %s operand".format(_type.text));
             static if (is(T : string)) {
                 return _stringValue;
             } else static if (is(T : wstring)) {
@@ -208,13 +206,12 @@ struct Operand
 
             enforce(_type == OperandType.Boolean, "Can not get bool from %s operand".format(_type.text));
             return _boolValue;
+
         } else static if(isNumeric!T) {
 
             enforce(_type == OperandType.Number, "Can not get bool from %s operand".format(_type.text));
             return cast(T)_floatValue;
-        } else {
 
-            static assert(0, "Invalid operand type conversion");
-        }
+        } else static assert(0, "Invalid operand type conversion");
     }
 }
