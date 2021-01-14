@@ -100,6 +100,15 @@ public:
     }
 
     /**
+        Returns a new undefined value
+    */
+    static Value undefined() {
+        Value v;
+        v.type = YarnType.Undefined;
+        return v;
+    }
+
+    /**
         Compare values
     */
     int cmp(Value value) {
@@ -271,8 +280,7 @@ public:
         Gets this value instance's hash
     */
     @trusted
-    size_t toHash()
-    {
+    size_t toHash() inout {
         switch (type) {
             case YarnType.Number:
                 return typeid(num_).getHash(&num_);
