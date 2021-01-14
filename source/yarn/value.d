@@ -66,6 +66,7 @@ public:
         } else {
             this.underlyingData[] = value.underlyingData[];
         }
+        type = YarnType.String;
     }
 
     /**
@@ -77,6 +78,7 @@ public:
         // the boolean value would be copied to the float value instead!
 
         this.bool_ = value;
+        type = YarnType.Bool;
     }
 
     /**
@@ -84,6 +86,7 @@ public:
     */
     this(T)(T value) if (isNumeric!T) {
         num_ = cast(float)value;
+        type = YarnType.Number;
     }
 
     /**
