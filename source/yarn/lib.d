@@ -56,8 +56,8 @@ public:
         Registers a delegate
 
         NOTE: Delegates can only take Values as parameters
-        Delegates can return void, void returns will be rewritten
-        to return YarnValue.undefined
+        Delegates HAS to return a YarnValue, you can return
+        YarnValue.undefined if you have nothing useful to return.
     */
     @trusted
     void register(T)(string name, T dg) if (isDelegate!T) {
@@ -106,6 +106,11 @@ public:
     YarnValue call(Args...)(string name, Args args) {
         enforce(name in delegates, "Delegate %s not found in library".format(name));
         enforce(args.length == delegates[name].args, "Argument count mismatch!");
+        
+        // Compile time check to make sure arg types are compatible
+        static foreach(arg; Args) {
+            static assert(is(typeof(arg) == YarnValue), "Delegates can only take YarnValue arguments!");
+        }
 
         alias dgType = mixin(buildDelegateType(args.length));
         return (cast(dgType)delegates[name].ptr)(args);
