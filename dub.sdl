@@ -1,10 +1,20 @@
-name "dyarnspinner"
+name "yarnspinner"
 description "D YarnSpinner implementation"
 authors "Luna"
 copyright "Copyright © 2021, Luna"
 license "MIT"
 dependency "protobuf" version="~>0.6.2"
 dependency "silly" version="~>1.0.2"
-
-// Throw stuff in to out/ dir
+dependency "pegged" version="~>0.4.4"
 targetPath "out/"
+
+subPackage "./parser/"
+
+configuration "library" {
+    targetType "library"
+}
+
+configuration "regenParser" {
+    targetType "library"
+    preBuildCommands "dub run yarnspinner:parser --compiler=ldc2 -- \"yarn.compiler.parser\" \"source/yarn/compiler/parser\""
+}

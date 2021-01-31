@@ -1,0 +1,274 @@
+Yarn:
+    # We have a body here to make sure to escape comments if needed
+    Body < (
+        # First file tags
+        (Comment / FileTag)*
+
+        # Then nodes
+        (Comment / Node)+
+
+        # If the node fails there might be a file tag that there shouldn't!
+        !'#'
+    )
+
+    # The grammar consists of one or more nodes
+    Node < (
+
+        # Note: to make the parse tree cleaner 
+        # we discard the opening and closing markers.
+        # We just need them to define to the parser 
+        # when the node begins and ends anyways
+        Tag+
+        :"---"
+        StatementBlock('===')
+        :"==="
+    )
+
+    # This needs to be spacing sensitive as
+    # shorthand options use identation for
+    # scopes.
+    StatementBlock(BlockEnd) <- (
+
+        # We want to seperate this block
+        # otherwise we'll run yarnBlockEnd too many times
+        (
+            :spacing*
+            (
+                # Discard comments in body as well
+                # Note: EOL is consumed automatically by Line
+                Comment /
+                
+                # Commands don't automatically consume EOL
+                # We'll do it manually here
+                Command /
+                
+                # Option lists
+                OptionList /
+
+                # Dialogue
+                # Note: BlockEnd deontes the end of the node
+                # therefore we don't want to parse it as a line
+                (!BlockEnd Dialogue)
+            )
+        )+
+
+    )
+
+    IndentedStatementBlock <- (
+        
+        # We only use this to begin the block, so we can just discard it after
+        :(
+            ~(spacing*) {yarnBlockBegin}
+        )
+        
+        (
+            # We want to seperate this block
+            # otherwise we'll run yarnBlockEnd too many times
+            (
+                # A 
+                :(
+                    ~(spacing*) {yarnIndentation}
+                )
+                
+                (
+                    # Discard comments in body as well
+                    # Note: EOL is consumed automatically by Line
+                    Comment /
+                    
+                    # Commands don't automatically consume EOL
+                    # We'll do it manually here
+                    Command /
+                    
+                    # Option lists
+                    OptionList /
+
+                    # Dialogue
+                    (:spacing* Dialogue)
+                )
+            )+
+        )
+    )
+
+    # An option
+    Option <- (
+        :spacing* :'->' :spacing* Line
+        IndentedStatementBlock
+    )
+
+    # A list of options
+    OptionList <- (
+        Option+
+    )
+
+    # A command
+    # TODO: Parse differing commands differently
+    Command <- (
+        (
+            FlowBlock /
+
+            # Opening Tag
+            :'<<'
+            (
+                CommandJump /
+                CommandStop /
+                CommandDeclare /
+                CommandSet /
+                CommandDirection
+            )
+            # Closing tag
+            :'>>'
+        )
+
+        # optional hashtags, or end of line
+        (
+            :spacing
+            HashTags / :spacing :eol
+        )
+    )
+
+    CommandStop <- "stop"
+
+    # A jump command (can have expression so we just parse it as a line)
+    CommandJump <- :"jump" :spacing ~(!'>>' .)*
+
+    # The name of the command w/ optional body
+    CommandDirection <- (identifier CommandBody / identifier)
+
+    # Set command
+    CommandSet <- :"set" :spacing OpAssign
+    
+    # Declare command
+    CommandDeclare <- (
+        :"declare" :spacing 
+        (
+            OpAssign :spacing :"as" :spacing TypeName / 
+            OpAssign
+        )
+    )
+
+    CommandBody <- (
+        :spacing
+        ~(!'>>' .)*
+    )+
+
+    FlowBlock < (
+
+        (
+            # If statement, optionally followed be else if statement(s)
+            # Followed by else statement
+            IfBlock
+            ElseIfBlock*
+            ElseBlock /
+
+            # If statement followed be else if statement(s)
+            IfBlock
+            ElseIfBlock+ /
+            
+            # Single if statement
+            IfBlock
+        )
+
+        # If statements HAVE to end with an endif block
+        :'<<endif>>'
+    )
+
+    IfBlock < (
+        (:'<<if' Expression :'>>')
+        StatementBlock('<<endif>>') /
+        :'<<if' Expression :'>>'
+    )
+
+    ElseIfBlock < (
+        (:'<<elseif' Expression :'>>')
+        StatementBlock('<<endif>>') /
+        :'<<elseif' Expression :'>>'
+    )
+
+    ElseBlock < (
+        :'<<else>>'
+        StatementBlock('<<endif>>') /
+        :'<<else>>'
+    )
+
+    # OpAssign for assignment
+    OpAssign <- (
+        Var :spacing
+        :("=" / "to") :spacing
+        Expression
+    )
+
+    # Line consumes all characters until it reaches EOL
+    # Then consumes and discards the EOL marker
+    Line <- ~(!eol !'#' .)* :eol*
+
+    # A line of dialogue
+    Dialogue <- Line HashTags
+
+    # These utilize Line to get the rest of the line after their opening
+    Tag <- identifier :':' Line
+
+    # A file level tag
+    FileTag <- (:'#' identifier :':' Line) {yarnFileTag}
+
+    # Line hashtags
+    HashTags < HashTag*
+    HashTag <- :'#' identifier :':' ~((!eol !',') .)* (:eol / :',')
+
+    # Comment should always be discarded anyways so we don't
+    # need to individually discard things here.
+    Comment <: '//' ~(!eol .)* :eol*
+
+    # A string literal
+    StringLiteral <- :'\"' ~(
+        # To make sure string escaping works we have this little
+        # extra check
+        ('\\\"' / !'\"') 
+    .)* :'\"'
+
+    # Boolean literals
+    BoolLiteral <- "true" / "false"
+
+    # Number literals
+    NumberLiteral <- ~(digit+ '.' digit+ / digit+)
+
+    # A variable identifier is a $ followed C compatible identifier
+    Var <- :'$' identifier
+
+    TypeName <- "Number" / "Bool" / "String"
+
+    #
+    #   Expressions
+    #
+
+    Expression      < Factor (OpAdd / OpSub)*
+    OpAdd           < :"+" Factor
+    OpSub           < :"-" Factor
+
+    Factor        < Binary (OpMul / OpDiv / OpMod)*
+    OpMul           < :"*" Binary
+    OpDiv           < :"/" Binary
+    OpMod           < :"%" Binary
+
+    Binary          < Comparison (OpOr / OpAnd / OpXor)*
+    OpOr            < :("||" / "or") Comparison
+    OpAnd           < :("&&" / "and") Comparison
+    OpXor           < :("^" / "xor") Comparison
+
+    Comparison      < Primary (OpEquals / OpNotEquals / OpLessThan / OpGreaterThan / OpLessOrEq / OpGreaterOrEq)*
+    OpEquals        < :("==" / "is") Primary
+    OpNotEquals     < :("!=" / "!is") Primary
+    OpLessThan      < :"<" Primary
+    OpGreaterThan   < :">" Primary
+    OpLessOrEq      < :"<=" Primary
+    OpGreaterOrEq   < :">=" Primary
+    
+    Primary         < FuncCall / Parens / UnaryNot / UnaryMinus / NumberLiteral / StringLiteral / BoolLiteral / Var
+
+    # function call
+    FuncCall        < identifier :'(' FuncParams :')'
+    FuncParams      < Expression (:',' Expression)*
+
+    # For unary op we want the keywords to be up against the Primary
+    UnaryNot    <- :"!" Primary
+    UnaryMinus  <- :"-" Primary
+    Parens      < :"(" Expression :")"
